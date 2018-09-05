@@ -11,8 +11,11 @@ app.use(bodyParser.json());
 
 // FOR EXCEL FILE
 var mongoXlsx = require('mongo-xlsx');
+var fs = require('fs');
 // PDF
 var pdf = require('html-pdf');
+
+var download = require('download-file')
 
 // CREATE EXCE FILE
 app.get('/', (req, res) => {
@@ -24,21 +27,28 @@ app.get('/', (req, res) => {
         defaultSheetName: "spmohansp"
     }
     var data={};
-    var datas=[];
-   for (let index = 0; index < 100; index++) {
-    // data.date=new Date();
-    data.name='name'+index;
-    data.address='salem'+index;
-    data.mobile='123456789'+index;
-    datas.push(data);
-   }
-   finalData = datas;
+    var finalData=[];
+        for (let index = 0; index < 100; index++) {
+            // data.date=new Date();
+            data.name='name'+index;
+            data.address='salem'+index;
+            data.mobile='123456789'+index;
+            finalData.push(data);
+        }
 //    res.send(datas);
 //    var data = [ { name : "mohan", lastName : "s", address : 'salem' } , { name : "ragu",  lastName : "r", address :"salem",mobile:'98745633210' }];
 //    res.send(data);
     var model = mongoXlsx.buildDynamicModel(finalData);
     mongoXlsx.mongoData2Xlsx(finalData, model,options, function(err, finalData) {
-        res.send('File Saved In the path: '+finalData.fullPath); 
+        var FilePath = 'public/'+finalData.fileName;
+        // donload excel file
+        res.download(FilePath,'mohan.xlsx');
+        setTimeout(function() {
+            fs.unlink(FilePath,function(err){
+                if(err) return console.log(err);
+                console.log(finalData.fileName + ' file was deleted successfully');
+            })
+        }, 1000);
     });
 });
 
